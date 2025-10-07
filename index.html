@@ -31,6 +31,7 @@
   <video id="player" controls crossorigin playsinline></video>
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
   <script>
     // Get m3u8 link from url
     function getM3u8Link() {
@@ -42,20 +43,32 @@
     const source = getM3u8Link();
 
     if (source) {
-      // Set source
       const video = document.getElementById('player');
-      video.src = source;
-      video.type = "application/x-mpegURL";
-      // Plyr config
-      const player = new Plyr('#player', {
-        settings: ['quality'],
-        quality: {
-          default: 360,
-          options: [360, 480, 720, 1080],
-        },
-        i18n: {restart: "Restart", rewind: "Rewind", play: "Play", pause: "Pause"},
-        controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
-      });
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(source);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play();
+        });
+        // Plyr init
+        const player = new Plyr(video, {
+          settings: ['quality'],
+          controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = source;
+        video.addEventListener('loadedmetadata', function () {
+          video.play();
+        });
+        // Plyr init
+        const player = new Plyr(video, {
+          settings: ['quality'],
+          controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+        });
+      } else {
+        document.body.innerHTML = "<h2 style='color:#fff;text-align:center'>Your browser does not support HLS playback.<br>Please use a modern browser.</h2>";
+      }
     } else {
       document.body.innerHTML = "<h2 style='color:#fff;text-align:center'>No video source provided.<br>Use /?ios=YOUR_M3U8_LINK</h2>";
     }
