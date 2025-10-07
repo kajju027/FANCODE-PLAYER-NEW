@@ -1,77 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Jiostar Live Player</title>
-  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <meta charset="utf-8" />
+  <title>LIVE STREAM</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.6.12/dist/plyr.css" />
   <style>
-    body {
-      background: linear-gradient(135deg, #007bff 0%, #ffeb3b 60%, #f44336 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    :root{
+      --bg:#000;
+      --accent:#FFD400;
+      --white:#fff;
+      --panel:#111;
     }
-    .plyr--video {
-      border: 6px solid #ffeb3b;
-      border-radius: 16px;
-      box-shadow: 0 0 30px #007bff55, 0 0 12px #f4433677;
-    }
-    .plyr__controls {
-      background: linear-gradient(90deg, #007bff 50%, #f44336 75%, #ffeb3b 100%);
-      border-radius: 6px;
-    }
-    .plyr__control--overlaid {
-      background: #f44336;
-      color: #ffeb3b;
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--white);font-family:Inter,system-ui,Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;}
+    .player-container{width:100%;max-width:980px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(0,0,0,0.6);}
+    .player-wrap{position:relative;height:60vh;min-height:260px;background:#000;}
+    video#player{width:100%;height:100%;object-fit:contain;background:#000;display:block;}
+    .live-badge{position:absolute;top:12px;right:12px;background:#e53935;color:#fff;padding:6px 10px;border-radius:18px;font-weight:700;font-size:12px;z-index:60;}
+    /* Plyr color fixes */
+    :root { --plyr-color-main: var(--accent); }
+    .plyr__control.plyr__control--overlaid{width:56px;height:56px;border-radius:50%;background:var(--accent)!important;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.6);}
+    .plyr--video .plyr__controls button.plyr__control svg, .plyr__controls [class*="plyr__control"] svg { fill: var(--white) !important; }
+    .plyr--video .plyr__controls button.plyr__control[aria-pressed="true"] svg, .plyr__controls [class*="plyr__control"][aria-expanded="true"] svg { fill: var(--accent) !important; }
+    .plyr__progress--played, .plyr__progress__buffer { background: linear-gradient(90deg, rgba(255,212,0,1), rgba(255,212,0,0.8)) !important; }
+    .plyr__controls { background: rgba(0,0,0,0.12); backdrop-filter: blur(4px); }
+    .error{padding:14px;text-align:center;color:#ffd9a8;background:#1a1a1a;}
+    /* Popup */
+    .popup-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000; }
+    .popup {background:var(--panel);padding:20px;border-radius:12px;text-align:center;width:min(92%,360px);box-shadow:0 12px 40px rgba(0,0,0,0.8);}
+    .popup h2{margin:0 0 8px;color:var(--accent);font-size:18px;}
+    .popup p{margin:0 0 16px;color:#ddd;font-size:14px;}
+    .popup button{display:block;width:100%;padding:12px;border:0;border-radius:10px;font-weight:700;margin-bottom:8px;cursor:pointer;}
+    .btn-join{background:linear-gradient(90deg,#FFD400,#FFB200);color:#111;}
+    .btn-close{background:#000;color:#fff;border:1px solid rgba(255,255,255,0.06);}
+    /* Fullscreen overrides */
+    .plyr--fullscreen, .plyr--fullwindow { position:fixed !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; z-index:999999 !important; border-radius:0 !important; }
+    .plyr--fullscreen video, .plyr--fullwindow video { width:100% !important; height:100% !important; object-fit:cover !important; }
+    @media (max-width:540px){
+      .player-wrap{height:56vh;}
+      .live-badge{top:10px;right:10px;padding:6px 8px;font-size:11px;}
     }
   </style>
 </head>
 <body>
-  <video id="player" controls crossorigin playsinline></video>
+  <div class="wrap">
+    <div class="player-container">
+      <div class="player-wrap">
+        <video id="player" controls autoplay playsinline muted></video>
+        <div class="live-badge">LIVE</div>
+      </div>
+      <div id="error" class="error" style="display:none"></div>
+    </div>
+  </div>
 
-  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <div class="popup-overlay" id="popup">
+    <div class="popup" role="dialog" aria-modal="true" aria-labelledby="p-title">
+      <h2 id="p-title">Support Us</h2>
+      <p>Join our channel for latest updates.</p>
+      <button class="btn-join" id="joinBtn" type="button">Join Now</button>
+      <button class="btn-close" id="closePopup" type="button">Already Joined</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.6.12/dist/plyr.min.js"></script>
   <script>
-    // Get m3u8 link from url
-    function getM3u8Link() {
+    (function(){
+      const playerEl = document.getElementById('player');
+      const errorEl = document.getElementById('error');
+      const popup = document.getElementById('popup');
+      const joinBtn = document.getElementById('joinBtn');
+      const closePopup = document.getElementById('closePopup');
+
+      // Read ?ios= query param (expects an M3U8 URL)
       const params = new URLSearchParams(window.location.search);
-      // /?ios=YOUR_M3U8_LINK
-      return params.get('ios');
-    }
+      const m3u8 = params.get('ios');
 
-    const source = getM3u8Link();
+      // Popup behavior: dismiss after 7s automatically and wire buttons
+      setTimeout(()=>{ if(popup) popup.style.display='none'; }, 7000);
+      joinBtn.addEventListener('click', ()=>{ window.open('https://whatsapp.com/channel/0029VaeylYYBPzjVNomWuZ0T','_blank'); });
+      closePopup.addEventListener('click', ()=>{ if(popup) popup.style.display='none'; });
 
-    if (source) {
-      const video = document.getElementById('player');
-      if (Hls.isSupported()) {
+      function showError(msg){
+        errorEl.style.display = 'block';
+        errorEl.textContent = msg;
+      }
+
+      // Initialize when m3u8 is present
+      if (!m3u8) {
+        playerEl.style.display = 'none';
+        showError('No video URL provided. Use: ?ios=YOUR_M3U8_URL');
+        // keep popup visible in case they want to join
+        popup.style.display = 'flex';
+        return;
+      }
+
+      // Try Hls.js first
+      if (window.Hls && Hls.isSupported()) {
         const hls = new Hls();
-        hls.loadSource(source);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          video.play();
+        hls.loadSource(m3u8);
+        hls.attachMedia(playerEl);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+          // Build sorted unique quality list (heights)
+          const qualities = Array.from(new Set(hls.levels.map(l => l.height).filter(Boolean))).sort((a,b)=>a-b);
+          // Default to lowest available for mobile-friendly fallback
+          const defaultQuality = qualities.length ? qualities[0] : null;
+
+          // Init Plyr with quality options if any
+          window.player = new Plyr(playerEl, {
+            controls: ['play-large','play','progress','current-time','mute','volume','settings','airplay','fullscreen'],
+            settings: ['quality'],
+            quality: {
+              default: defaultQuality || 360,
+              options: qualities.length ? qualities : [360],
+              forced: !!qualities.length,
+              onChange: q => {
+                // find level index matching height q
+                const idx = hls.levels.findIndex(l => l.height === q);
+                if (idx !== -1) hls.currentLevel = idx;
+              }
+            }
+          });
         });
-        // Plyr init
-        const player = new Plyr(video, {
-          settings: ['quality'],
-          controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+
+        hls.on(Hls.Events.ERROR, function(event, data) {
+          console.error('HLS error', data);
+          if (data.fatal) {
+            showError('Playback error. Cannot play the stream.');
+          }
         });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = source;
-        video.addEventListener('loadedmetadata', function () {
-          video.play();
-        });
-        // Plyr init
-        const player = new Plyr(video, {
-          settings: ['quality'],
-          controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+      } else if (playerEl.canPlayType('application/vnd.apple.mpegurl')) {
+        playerEl.src = m3u8;
+        window.player = new Plyr(playerEl, {
+          controls: ['play-large','play','progress','current-time','mute','volume','settings','airplay','fullscreen']
         });
       } else {
-        document.body.innerHTML = "<h2 style='color:#fff;text-align:center'>Your browser does not support HLS playback.<br>Please use a modern browser.</h2>";
+        playerEl.style.display='none';
+        showError('Your browser does not support HLS playback.');
       }
-    } else {
-      document.body.innerHTML = "<h2 style='color:#fff;text-align:center'>No video source provided.<br>Use /?ios=YOUR_M3U8_LINK</h2>";
-    }
+    })();
   </script>
 </body>
 </html>
