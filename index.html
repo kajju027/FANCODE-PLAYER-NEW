@@ -1,135 +1,64 @@
-<!doctype html>
-
-<html lang="bn">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Plyr Live Player — JIOSTAR</title>  <!-- Plyr CSS -->  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <meta charset="UTF-8">
+  <title>Jiostar Live Player</title>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <style>
-    :root{
-      --accent-1: #0b6efd; /* নীল */
-      --accent-2: #e50914; /* লাল */
-      --accent-3: #ffd400; /* হলুদ */
+    body {
+      background: linear-gradient(135deg, #007bff 0%, #ffeb3b 60%, #f44336 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    html,body{height:100%;margin:0;background:linear-gradient(135deg,var(--accent-1),var(--accent-2),var(--accent-3));font-family:Inter, system-ui, Arial, sans-serif}
-    .wrap{height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
-    .player-card{width:100%;max-width:960px;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,0.45);}/* Plyr theming */
-.plyr--full-ui{border-radius:8px;overflow:hidden}
-/* make control accents use the three colors as a subtle gradient */
-.plyr__control--pressed,.plyr__control:hover{background:linear-gradient(90deg,var(--accent-2),var(--accent-1));}
-.plyr__progress__buffer{background:linear-gradient(90deg,rgba(255,212,0,0.25),rgba(14,110,253,0.25));}
-.plyr__progress__played{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));}
-.plyr__controls{background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(0,0,0,0.6))}
-
-/* big central play button tint */
-.plyr__play-large{background:linear-gradient(45deg,var(--accent-1),var(--accent-3));box-shadow:0 6px 20px rgba(0,0,0,0.35)}
-
-/* small responsive tweaks */
-@media (max-width:600px){.player-card{padding:8px}}
-
-/* message styles */
-.meta{color:#fff;font-size:13px;padding:8px 12px}
-.meta b{display:inline-block;width:90px}
-
+    .plyr--video {
+      border: 6px solid #ffeb3b;
+      border-radius: 16px;
+      box-shadow: 0 0 30px #007bff55, 0 0 12px #f4433677;
+    }
+    .plyr__controls {
+      background: linear-gradient(90deg, #007bff 50%, #f44336 75%, #ffeb3b 100%);
+      border-radius: 6px;
+    }
+    .plyr__control--overlaid {
+      background: #f44336;
+      color: #ffeb3b;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="player-card">
-      <video id="player" playsinline controls crossorigin="anonymous"></video>
-      <div class="meta"> <b>Usage:</b> ব্যবহার: <code>?ios=&lt;m3u8_url&gt;</code>  — ডিফল্ট কোয়ালিটি 360p হবে যদি ম্যানিফেস্টে পাওয়া যায়।</div>
-    </div>
-  </div>  <!-- Scripts -->  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.1/dist/hls.min.js"></script>  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>  <script>
-    // Helper: get ?ios= parameter (raw)
-    function getIOSParam(){
-      try{
-        const p = new URLSearchParams(location.search).get('ios');
-        if(!p) return null;
-        // Accept encoded or plain links
-        try{ return decodeURIComponent(p); }catch(e){return p}
-      }catch(e){return null}
+  <video id="player" controls crossorigin playsinline></video>
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script>
+    // Get m3u8 link from url
+    function getM3u8Link() {
+      const params = new URLSearchParams(window.location.search);
+      // /?ios=YOUR_M3U8_LINK
+      return params.get('ios');
     }
 
-    const src = getIOSParam();
-    const video = document.getElementById('player');
+    const source = getM3u8Link();
 
-    // Plyr init (controls only). We'll attach source after Hls handled.
-    const player = new Plyr(video, {
-      controls: ['play-large','play','progress','current-time','mute','volume','settings','pip','airplay','fullscreen'],
-      settings: ['quality','speed'],
-      autoplay: false,
-      invertTime: false
-    });
-
-    if(!src){
-      // No source provided. show placeholder poster and message in console.
-      video.poster = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="%23000000"/><text x="50%" y="50%" fill="%23ffffff" font-size="28" text-anchor="middle" dy=".3em">No stream. Append ?ios=&lt;m3u8_url&gt; to the page URL</text></svg>';
-      console.warn('No ?ios= parameter found. Append ?ios=<m3u8_url> to play a stream.');
+    if (source) {
+      // Set source
+      const video = document.getElementById('player');
+      video.src = source;
+      video.type = "application/x-mpegURL";
+      // Plyr config
+      const player = new Plyr('#player', {
+        settings: ['quality'],
+        quality: {
+          default: 360,
+          options: [360, 480, 720, 1080],
+        },
+        i18n: {restart: "Restart", rewind: "Rewind", play: "Play", pause: "Pause"},
+        controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+      });
     } else {
-      // Attach HLS if supported
-      if(Hls.isSupported()){
-        const hls = new Hls({
-          capLevelToPlayerSize: true,
-          maxBufferLength: 30
-        });
-        hls.loadSource(src);
-        hls.attachMedia(video);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, function(event, data){
-          // data.levels : array of available renditions
-          // Find a level with height === 360. If not found pick closest height under 360 or lowest available.
-          const levels = data.levels || [];
-          if(levels.length){
-            let chosenIndex = -1;
-            // exact 360 first
-            for(let i=0;i<levels.length;i++){ if(levels[i].height===360){ chosenIndex = i; break; } }
-            if(chosenIndex===-1){
-              // find closest height to 360
-              let bestDiff = Infinity;
-              for(let i=0;i<levels.length;i++){
-                const diff = Math.abs((levels[i].height||0) - 360);
-                if(diff < bestDiff){ bestDiff = diff; chosenIndex = i; }
-              }
-            }
-            // Set currentLevel to chosen index. -1 means auto. Use chosenIndex.
-            if(typeof chosenIndex === 'number' && chosenIndex >= 0){
-              hls.currentLevel = chosenIndex;
-              console.log('Selected level index', chosenIndex, 'height', levels[chosenIndex].height);
-            }
-          }
-          // Play only after parsed to avoid autoplay blocking issues; user still needs to press play on mobile.
-          // video.play().catch(()=>{});
-        });
-
-        // Optional: expose quality list to Plyr settings menu
-        hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data){
-          // notify or update UI if you want
-        });
-
-        hls.on(Hls.Events.ERROR, function(event, data){
-          console.error('HLS error', data);
-        });
-
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')){
-        // Native HLS (Safari, iOS)
-        video.src = src;
-      } else {
-        // Not supported
-        console.error('HLS not supported in this browser');
-        const msg = document.createElement('div');
-        msg.style.color = '#fff';
-        msg.style.padding = '12px';
-        msg.textContent = 'দুঃখিত: এই ব্রাউজারে HLS সমর্থিত নয়। Safari বা HLS সমর্থিত ব্রাউজার ব্যবহার করুন।';
-        document.querySelector('.player-card').appendChild(msg);
-      }
+      document.body.innerHTML = "<h2 style='color:#fff;text-align:center'>No video source provided.<br>Use /?ios=YOUR_M3U8_LINK</h2>";
     }
-
-    // Small UX: add keyboard shortcut for quality cycling (optional)
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'q'){
-        // toggle picture-in-picture as quick test
-        if(player.pip) player.pip.toggle();
-      }
-    });
-  </script></body>
-  </html>
+  </script>
+</body>
+</html>
