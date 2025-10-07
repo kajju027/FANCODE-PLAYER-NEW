@@ -1,92 +1,94 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Advanced Live Player</title>
-  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FamCode Advanced Player</title>
 
-  <style>
-    :root{
-      --bg:#040506;
-      --card:#0b0d10;
-      --accent-start:#35d0ff;
-      --accent-end:#8b3bff;
-      --text:#e9f0fb;
-    }
-    html,body{margin:0;padding:0;height:100%;background:#000;color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
-    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px;box-sizing:border-box}
-    .player-card{width:100%;max-width:920px;background:rgba(255,255,255,0.02);border-radius:14px;padding:18px;box-shadow:0 0 40px rgba(0,200,255,0.08);position:relative;border:1px solid rgba(255,255,255,0.05)}
-    video,.plyr{width:100%!important;aspect-ratio:16/9;border-radius:10px}
-    footer{width:100%;max-width:920px;display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:0.85;padding:8px 14px;box-sizing:border-box}
-    footer iframe{width:120px;height:18px;border:none}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999}
-    .modal{width:min(92%,520px);background:rgba(255,255,255,0.05);border-radius:20px;padding:22px;text-align:center;position:relative;box-shadow:0 0 60px rgba(53,208,255,0.2)}
-    .modal h2{margin:6px 0 8px;font-size:28px;color:transparent;background:linear-gradient(90deg,var(--accent-start),var(--accent-end));-webkit-background-clip:text;background-clip:text}
-    .modal p{margin:0 0 18px;color:#fff;opacity:.85}
-    .join-btn{display:inline-block;padding:12px 26px;border-radius:12px;font-weight:700;border:none;background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#041226;cursor:pointer}
-    .secondary-btn{display:inline-block;margin-top:10px;padding:10px 18px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.05);color:var(--text);cursor:pointer}
-    .close-x{position:absolute;right:14px;top:10px;font-size:18px;color:rgba(255,255,255,0.6);cursor:pointer}
-  </style>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+
+<style>
+:root{
+  --accent1:#37d0ff;
+  --accent2:#5affb0;
+  --bg:#000;
+  --text:#e8f8ff;
+}
+html,body{margin:0;padding:0;background:#000;color:var(--text);font-family:Inter,system-ui,Arial,sans-serif;height:100%;overflow-x:hidden;}
+.wrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:100vh;padding:20px;gap:20px;box-sizing:border-box;}
+.player-box{width:100%;max-width:900px;position:relative;background:rgba(255,255,255,0.03);border-radius:16px;padding:16px;box-shadow:0 0 40px rgba(55,208,255,0.08),0 0 80px rgba(90,255,176,0.05);}
+video,.plyr{width:100%!important;aspect-ratio:16/9;border-radius:12px;}
+.plyr--video .plyr__controls{background:linear-gradient(90deg,rgba(55,208,255,0.15),rgba(90,255,176,0.15));backdrop-filter:blur(8px);border-radius:0 0 12px 12px;}
+footer{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:.85;padding:10px;box-sizing:border-box;}
+footer iframe{width:120px;height:18px;border:none}
+
+/* Popup same as screenshot */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.modal{width:min(90%,420px);background:rgba(10,15,20,0.95);border-radius:18px;padding:24px;text-align:center;position:relative;box-shadow:0 0 50px rgba(55,208,255,0.25);}
+.modal h2{font-size:26px;font-weight:800;margin:6px 0 10px;color:#5defff;text-shadow:0 0 20px rgba(55,208,255,0.6);}
+.modal p{margin:0 0 20px;color:#bcd3ff;}
+.join-btn{display:inline-block;width:100%;max-width:240px;padding:12px 0;border-radius:10px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001018;font-weight:700;font-size:16px;border:none;cursor:pointer;box-shadow:0 0 30px rgba(55,208,255,0.35);}
+.already-btn{display:inline-block;width:100%;max-width:240px;padding:10px 0;margin-top:10px;border-radius:10px;background:rgba(255,255,255,0.05);color:var(--text);font-weight:600;font-size:15px;border:none;cursor:pointer;}
+.close-x{position:absolute;right:14px;top:10px;font-size:20px;color:rgba(255,255,255,0.7);cursor:pointer;}
+</style>
 </head>
 <body>
 
-  <!-- Popup -->
-  <div id="entryModal" class="overlay">
-    <div class="modal">
-      <div class="close-x" id="modalClose">✕</div>
-      <h2>Support Us!</h2>
-      <p>Join our Telegram for latest updates.</p>
-      <a class="join-btn" href="https://t.me/yourtelegram" target="_blank" rel="noopener">Join Now</a>
-      <div><button id="alreadyBtn" class="secondary-btn">Already Joined</button></div>
-    </div>
+<!-- Popup -->
+<div id="popup" class="overlay">
+  <div class="modal">
+    <div class="close-x" id="closePopup">✕</div>
+    <h2>Support Us!</h2>
+    <p>Join our Telegram for latest updates.</p>
+    <a class="join-btn" href="https://t.me/yourtelegram" target="_blank" rel="noopener">Join Now</a>
+    <button class="already-btn" id="alreadyJoined">Already Joined</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="player-box">
+    <video id="player" controls playsinline></video>
   </div>
 
-  <div class="wrap">
-    <div class="player-card">
-      <video id="player" controls playsinline></video>
-    </div>
+  <footer>
+    <div>SAYAN OAI - All Rights Reserved</div>
+    <iframe src="https://counter1.optistats.ovh/private/freecounterstat.php?c=5ggh91rsudsf178p2fp3f6r7e4jmw8jj" title="visitor counter"></iframe>
+  </footer>
+</div>
 
-    <footer>
-      <div>SAYAN OAI - All Rights Reserved</div>
-      <iframe src="https://counter1.optistats.ovh/private/freecounterstat.php?c=5ggh91rsudsf178p2fp3f6r7e4jmw8jj" title="visitor counter"></iframe>
-    </footer>
-  </div>
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+const video=document.getElementById('player');
+const player=new Plyr(video,{
+  controls:['play-large','play','progress','current-time','mute','volume','settings','pip','airplay','fullscreen'],
+  settings:['speed'],
+  tooltips:{controls:true,seek:true},
+  quality:{default:360,options:[360,480,720]},
+  autoplay:false
+});
 
-  <script>
-    const player = new Plyr('#player', {
-      controls:['play-large','play','progress','current-time','mute','volume','settings','pip','airplay','fullscreen'],
-      settings:['speed','captions'],
-      tooltips:{controls:true,seek:true}
-    });
+// Get m3u8 from URL
+const params=new URLSearchParams(window.location.search);
+const live=params.get('live');
+if(live){
+  if(Hls.isSupported()){
+    const hls=new Hls();
+    hls.loadSource(live);
+    hls.attachMedia(video);
+  }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    video.src=live;
+  }
+}else{
+  document.querySelector('.player-box').insertAdjacentHTML('beforeend','<p style="text-align:center;color:#ccc;margin-top:8px;">No stream link provided.</p>');
+}
 
-    // Get ?live= URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const liveURL = urlParams.get('live');
+// Popup logic
+const popup=document.getElementById('popup');
+document.getElementById('closePopup').onclick=()=>popup.style.display='none';
+document.getElementById('alreadyJoined').onclick=()=>popup.style.display='none';
+</script>
 
-    // Load m3u8 dynamically
-    const video = document.getElementById('player');
-    if(liveURL){
-      if(Hls.isSupported()){
-        const hls = new Hls();
-        hls.loadSource(liveURL);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.play();});
-      }else if(video.canPlayType('application/vnd.apple.mpegurl')){
-        video.src = liveURL;
-        video.addEventListener('loadedmetadata',()=>{video.play();});
-      }
-    }else{
-      video.insertAdjacentHTML('beforebegin','<p style="text-align:center;color:#aaa">No live link provided.</p>');
-    }
-
-    // Popup control
-    const entryModal=document.getElementById('entryModal');
-    document.getElementById('modalClose').onclick=()=>entryModal.style.display='none';
-    document.getElementById('alreadyBtn').onclick=()=>entryModal.style.display='none';
-  </script>
 </body>
 </html>
