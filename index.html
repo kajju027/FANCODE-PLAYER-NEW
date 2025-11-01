@@ -1,155 +1,187 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>FREE LIVE FANCODE  PLAYE : BY SAYAN OAI </title>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <meta name="referrer" content="no-referrer" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.6.12/dist/plyr.css" />
+  <meta charset="UTF-8" />
+  <title>Fancode - Matches</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="#" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
-    :root {
-      --bg:#000;
-      --accent:#FFD957;
-      --white:#fff;
-      --panel:#111;
-      --blue:#0099ff;
+    body { background-color: #0f0f0f; color: #fff; }
+    .match-card {
+      transition: all 0.3s ease-in-out;
+      background: linear-gradient(145deg, #1a1a1a, #1f1f1f);
     }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--white);font-family:Inter,system-ui,Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;}
-    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box;position:relative;}
-    .player-container{width:100%;max-width:980px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 6px 24px rgba(0,0,0,0.6);}
-    .player-wrap{position:relative;height:60vh;min-height:260px;background:#000;}
-    video#player{width:100%;height:100%;object-fit:contain;background:#000;display:block;border-radius:12px;}
-    .live-badge{position:absolute;top:12px;right:12px;background:#e53935;color:#fff;padding:6px 10px;border-radius:18px;font-weight:700;font-size:12px;z-index:60;}
-    /* Plyr Color Theme */
-    :root { --plyr-color-main: var(--accent); }
-    .plyr__control.plyr__control--overlaid{width:56px;height:56px;border-radius:50%;background:var(--accent)!important;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.6);}
-    .plyr--video .plyr__controls button.plyr__control svg, .plyr__controls [class*="plyr__control"] svg { fill: var(--white)!important; }
-    .plyr--video .plyr__controls button.plyr__control[aria-pressed="true"] svg, .plyr__controls [class*="plyr__control"][aria-expanded="true"] svg { fill: var(--accent)!important; }
-    .plyr__progress--played, .plyr__progress__buffer { background: linear-gradient(90deg,#FFD957,rgba(255,217,87,0.8))!important; }
-    .plyr__controls{background:rgba(0,0,0,0.12);backdrop-filter:blur(4px);}
-    .error{padding:14px;text-align:center;color:#ffd9a8;background:#1a1a1a;}
-    /* Popup */
-    .popup-overlay {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000;}
-    .popup {background:var(--panel);padding:20px;border-radius:12px;text-align:center;width:min(92%,360px);box-shadow:0 12px 40px rgba(0,0,0,0.8);}
-    .popup h2{margin:0 0 8px;color:var(--blue);font-size:18px;}
-    .popup p{margin:0 0 16px;color:#ddd;font-size:14px;}
-    .popup button{display:block;width:100%;padding:12px;border:0;border-radius:10px;font-weight:700;margin-bottom:8px;cursor:pointer;}
-    .btn-join{background:linear-gradient(90deg,#00a2ff,#006eff);color:#fff;}
-    .btn-close{background:#000;color:#fff;border:1px solid rgba(255,255,255,0.06);}
-    /* Bottom Left Telegram */
-    .bottom-left{position:fixed;bottom:12px;left:12px;z-index:500;}
-    .tg-btn{background:#00a2ff;color:#fff;padding:10px 16px;font-weight:700;border:none;border-radius:8px;font-size:14px;cursor:pointer;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,0.4);}
-    /* Bottom Right Visitor Counter */
-    .bottom-right{position:fixed;bottom:12px;right:12px;z-index:500;}
-    .bottom-right img{height:22px;width:auto;opacity:0.8;}
-    /* Dark/Night mode toggle */
-    .theme-toggle{position:fixed;top:12px;right:12px;background:var(--panel);color:var(--white);padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-size:13px;z-index:500;}
-    .light-mode{--bg:#f6f6f6;--panel:#fff;--white:#000;}
-    @media(max-width:540px){
-      .player-wrap{height:56vh;}
-      .live-badge{top:10px;right:10px;padding:6px 8px;font-size:11px;}
-      .theme-toggle{padding:6px 10px;font-size:12px;}
+    .match-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 35px rgba(0, 0, 0, 0.45);
     }
+    .live-badge { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      50% { box-shadow: 0 0 15px 10px rgba(239, 68, 68, 0); }
+    }
+    .match-img { transition: transform 0.3s ease; }
+    .match-card:hover .match-img { transform: scale(1.03); }
+
+    /* small helper to separate controls area */
+    .controls-row { gap: 0.6rem; display: flex; flex-wrap: wrap; }
   </style>
 </head>
-<body>
-  <button class="theme-toggle" id="themeToggle">🌙 Mode</button>
 
-  <div class="wrap">
-    <div class="player-container">
-      <div class="player-wrap">
-        <video id="player" controls autoplay playsinline muted></video>
-        <div class="live-badge">LIVE</div>
-      </div>
-      <div id="error" class="error" style="display:none"></div>
-    </div>
+<body class="bg-gray-950 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:py-10">
+    <h1 class="text-3xl sm:text-4xl font-bold text-center text-white mb-8 tracking-wide">
+      Fancode Live
+    </h1>
+    <div id="matches-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
   </div>
 
-  <a href="https://whatsapp.com/channel/0029VaeylYYBPzjVNomWuZ0T" target="_blank" class="tg-btn bottom-left">Join WhatsApp</a>
-  <div class="bottom-right">
-    <img src="https://counter1.optistats.ovh/private/freecounterstat.php?c=5ggh91rsudsf178p2fp3f6r7e4jmw8jj" alt="visits" />
-  </div>
-
-  <div class="popup-overlay" id="popup">
-    <div class="popup" role="dialog" aria-modal="true" aria-labelledby="p-title">
-      <h2 id="p-title">Support Us</h2>
-      <p>Join our channel for latest updates.</p>
-      <button class="btn-join" id="joinBtn" type="button">Join Now</button>
-      <button class="btn-close" id="closePopup" type="button">Already Joined</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/plyr@3.6.12/dist/plyr.min.js"></script>
   <script>
-    (function(){
-      const playerEl=document.getElementById('player');
-      const errorEl=document.getElementById('error');
-      const popup=document.getElementById('popup');
-      const joinBtn=document.getElementById('joinBtn');
-      const closePopup=document.getElementById('closePopup');
-      const toggle=document.getElementById('themeToggle');
+  const container = document.getElementById('matches-container');
+  const DATA_URL = 'https://raw.githubusercontent.com/Jitendra-unatti/fancode/refs/heads/main/data/fancode.json';
+  const PLAY_BASE = 'https://famcodeweb.pages.dev/watch';
 
-      // Theme toggle system
-      let dark=true;
-      toggle.addEventListener('click',()=>{
-        dark=!dark;
-        document.body.classList.toggle('light-mode',!dark);
-        toggle.textContent=dark?'🌙 Mode':'☀️ Mode';
-      });
+  const STREAM_META = {
+    adfree_stream:   { label: 'Ad-Free', classes: 'bg-green-600 hover:bg-green-700 text-white' },
+    dai_stream:      { label: 'DAI',     classes: 'bg-blue-600 hover:bg-blue-700 text-white' },
+    Primary_Playback_URL: { label: 'Primary', classes: 'bg-purple-600 hover:bg-purple-700 text-white' },
+    fancode_cdn:     { label: 'FanCode CDN', classes: 'bg-indigo-600 hover:bg-indigo-700 text-white' },
+    dai_google_cdn:  { label: 'DAI Google',  classes: 'bg-yellow-600 hover:bg-yellow-700 text-black' },
+    cloudfront_cdn:  { label: 'CloudFront',  classes: 'bg-pink-600 hover:bg-pink-700 text-white' },
+    sony_cdn:        { label: 'Sony CDN',    classes: 'bg-red-600 hover:bg-red-700 text-white' }
+  };
 
-      // ?ios= param read
-      const params=new URLSearchParams(window.location.search);
-      const m3u8=params.get('ios');
+  function makeBtn(label, href, extraClasses = '') {
+    const a = document.createElement('a');
+    a.href = href;
+    a.target = '_blank';
+    a.className = `px-4 py-2 rounded-lg text-sm flex items-center justify-center shadow-md transition-all ${extraClasses}`;
+    a.innerHTML = `<i class="fas fa-play mr-2"></i>${label}`;
+    return a;
+  }
 
-      // Popup auto hide
-      setTimeout(()=>{if(popup)popup.style.display='none';},70000);
-      joinBtn.addEventListener('click',()=>{window.open('https://whatsapp.com/channel/0029VaeylYYBPzjVNomWuZ0T','_blank');});
-      closePopup.addEventListener('click',()=>{if(popup)popup.style.display='none';});
+  fetch(DATA_URL)
+    .then(r => r.json())
+    .then(data => {
+      let matches = Array.isArray(data.matches) ? data.matches : [];
 
-      function showError(msg){errorEl.style.display='block';errorEl.textContent=msg;}
+      // Sort so LIVE or Streaming STARTED matches come first
+matches.sort((a, b) => {
+  const aLive =
+    (a.status || '').toUpperCase() === 'LIVE' ||
+    (a.streamingStatus || '').toUpperCase() === 'STARTED';
+  const bLive =
+    (b.status || '').toUpperCase() === 'LIVE' ||
+    (b.streamingStatus || '').toUpperCase() === 'STARTED';
+  return (bLive ? 1 : 0) - (aLive ? 1 : 0);
+});
 
-      if(!m3u8){
-        playerEl.style.display='none';
-        showError('No video URL provided. Use ?ios=YOUR_M3U8_URL');
-        popup.style.display='flex';
-        return;
-      }
+      matches.forEach(match => {
+        const isLive =
+  (match.status || '').toUpperCase() === 'LIVE' ||
+  (match.streamingStatus || '').toUpperCase() === 'STARTED';
+        const imgSrc =
+          match.image ||
+          (match.image_cdn && (match.image_cdn.APP || match.image_cdn.TATAPLAY || match.image_cdn.PLAYBACK || match.image_cdn.BG_IMAGE)) ||
+          'https://www.fancode.com/skillup-uploads/cms-media/Cricket_Fallback_Old_match-card.jpg';
 
-      // HLS setup
-      if(window.Hls && Hls.isSupported()){
-        const hls=new Hls();
-        hls.loadSource(m3u8);
-        hls.attachMedia(playerEl);
+        const card = document.createElement('div');
+        card.className = `rounded-2xl overflow-hidden shadow-xl match-card border border-gray-800 ${isLive ? 'ring-2 ring-red-600' : ''}`;
 
-        hls.on(Hls.Events.MANIFEST_PARSED,function(){
-          const qualities=Array.from(new Set(hls.levels.map(l=>l.height).filter(Boolean))).sort((a,b)=>a-b);
-          const defaultQuality=360; // forced default 360p
-          window.player=new Plyr(playerEl,{
-            controls:['play-large','play','progress','current-time','mute','volume','settings','airplay','fullscreen'],
-            settings:['quality'],
-            quality:{
-              default:defaultQuality,
-              options:qualities.length?qualities:[360],
-              forced:true,
-              onChange:q=>{
-                const idx=hls.levels.findIndex(l=>l.height===q);
-                if(idx!==-1)hls.currentLevel=idx;
-              }
+        const headerHTML = `
+          <div class="relative">
+            <img src="${imgSrc}" alt="${(match.title || 'Match')}" class="w-full h-48 sm:h-60 md:h-64 lg:h-72 object-cover object-top match-img">
+            ${isLive ? `<span class="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md live-badge">LIVE</span>` : ''}
+          </div>
+        `;
+
+        const title = match.title || 'Match';
+        const tournament = match.tournament || '';
+        const startTime = match.startTime || '';
+
+        let matchLang = '';
+        if (match.language) {
+          matchLang = String(match.language).toLowerCase();
+        } else if (match.STREAMING_CDN && match.STREAMING_CDN.language) {
+          matchLang = String(match.STREAMING_CDN.language).toLowerCase();
+        }
+        const language = matchLang ? ` • ${matchLang}` : '';
+        const sub1 = tournament ? `${tournament}${language}` : (language ? language.slice(3) : '');
+        const sub2 = startTime ? `Start: ${startTime}` : '';
+
+        const btnWrap = document.createElement('div');
+        btnWrap.className = 'flex flex-col sm:flex-row sm:flex-wrap gap-3 hidden mt-4';
+
+        const id = encodeURIComponent(String(match.match_id ?? ''));
+
+        // Generate stream buttons only if LIVE
+        if (isLive) {
+          ['adfree_stream', 'dai_stream'].forEach(key => {
+            const url = match[key];
+            if (url && url !== 'Unavailable') {
+              const meta = STREAM_META[key];
+              let href = `${PLAY_BASE}?id=${id}&cdn=${encodeURIComponent(key)}`;
+              if (matchLang === 'hindi') href += '&lang=hindi';
+              btnWrap.appendChild(makeBtn(meta.label, href, meta.classes));
             }
           });
-          // Set to 360 if exists
-          const idx=hls.levels.findIndex(l=>l.height===360);
-          if(idx!==-1)hls.currentLevel=idx;
-        });
-      }else if(playerEl.canPlayType('application/vnd.apple.mpegurl')){
-        playerEl.src=m3u8;
-        window.player=new Plyr(playerEl,{controls:['play-large','play','progress','current-time','mute','volume','settings','airplay','fullscreen']});
-      }else{
-        playerEl.style.display='none';
-        showError('Your browser does not support HLS playback.');
-      }
-    })();
-  </script>
+
+          if (match.STREAMING_CDN && typeof match.STREAMING_CDN === 'object') {
+            Object.entries(match.STREAMING_CDN).forEach(([key, value]) => {
+              if (!value || String(value).toLowerCase() === 'unavailable') return;
+              if (key.toLowerCase() === 'language') return;
+
+              const meta = STREAM_META[key] || { label: key.replace(/_/g, ' '), classes: 'bg-gray-700 hover:bg-gray-600 text-white' };
+              let href = `${PLAY_BASE}?id=${id}&cdn=${encodeURIComponent(key)}`;
+              if (matchLang === 'hindi') href += '&lang=Hindi';
+              btnWrap.appendChild(makeBtn(meta.label, href, meta.classes));
+            });
+          }
+        }
+
+        const body = document.createElement('div');
+        body.className = 'p-5 sm:p-6';
+        body.innerHTML = `
+          <h2 class="text-xl sm:text-2xl font-semibold text-white mb-1">${title}</h2>
+          <p class="text-gray-400 text-sm mb-1">${sub1}</p>
+          <p class="text-sm text-gray-500 mb-2">${sub2}</p>
+        `;
+
+        if (isLive) {
+          // Watch Now Button (visible and with clear background)
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold py-2 px-4 rounded-lg mt-3 transition shadow-lg backdrop-blur-sm';
+          toggleBtn.innerHTML = `<i class="fas fa-tv mr-2"></i>Watch Now`;
+
+          toggleBtn.addEventListener('click', () => {
+            btnWrap.classList.toggle('hidden');
+            toggleBtn.innerHTML = btnWrap.classList.contains('hidden')
+              ? `<i class="fas fa-tv mr-2"></i>Watch Now`
+              : `<i class="fas fa-chevron-up mr-2"></i>Hide Options`;
+          });
+
+          body.appendChild(toggleBtn);
+          body.appendChild(btnWrap);
+        } else {
+          // For upcoming or not started matches
+          const noStream = document.createElement('div');
+          noStream.className = 'w-full bg-gray-800 text-gray-400 py-2 px-4 rounded-lg mt-3 text-center';
+          noStream.innerHTML = `<i class="fas fa-clock mr-2"></i>No stream available yet`;
+          body.appendChild(noStream);
+        }
+
+        card.innerHTML = headerHTML;
+        card.appendChild(body);
+        container.appendChild(card);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching JSON:', error);
+      container.innerHTML = `<p class="text-center text-red-500">Failed to load matches.</p>`;
+    });
+</script>
+
 </body>
 </html>
